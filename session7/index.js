@@ -1,26 +1,23 @@
 const express = require("express")
 const app = express()
+const productRoutes = require("./routes/products")
+const userRoutes = require("./routes/user")
+const verifyToken = require("./middleware/auth")
 app.use(express.json())
+
+const mongoose = require("mongoose");
+ 
+mongoose.connect("mongodb+srv://naisyaz:1234@cluster0.llb16i0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+   .then(() => console.log("MongoDB connected"))
+   .catch((err) => console.error("Connection error:", err));
+
 
 function logger(req, res, next) {
     console.log('${req.method} ${req.url}');
     next ();
 }
 
-const products = [
-    {
-        id: 1,
-        name: "Shampoo"
-    },
-    { 
-        id: 2,
-        name: "Toothpaste"
-    },
-    {
-        id: 3,
-        name: "Toothbrush"
-    }
-]
+
 
 //        Request    Response
 app.get("/", (req, res) => {
@@ -28,27 +25,15 @@ app.get("/", (req, res) => {
 
 })
 
+app.get("/search", (req, res) => {
+    const keyword = req.query.q;
+    const keyword2 = req.query.type;
+    res.send(`Searching for ${keyword} and ${keyword2}`);
+  });
+
 app.get("/test", (req, res) => {
     res.send("Test route OK!")
 
-})
-// This is READ from CRUD
-app.get("/products", (req, res) => {
-    res.json(products)
-
-})
-
-app.post("/products", (req, res) => {
-    const lastProduct = products[products.length - 1]
-    const lastId = lastProduct.id    
-    const pid = req.body.id
-    const pname = req.body.name
-    const newProduct = {
-        id: pid,
-        name: pname
-    }
-    products.push(newProduct)
-    res.json(newProduct)
 })
 
 app.post("/message", (req, res) => {
@@ -56,22 +41,11 @@ app.post("/message", (req, res) => {
     res.send('You said: ${message}')
 })
 
-// This is UPDATE from CRUD
-app.put("/products/:pid", (req, res) => {
-    const pid = req.params.pid
-    const newProductName = req.body.name
-    const indexOfProduct = products.findIndex(product => product.id == pid)
-    products[indexOfProduct].name = newProductName
-    res.json(products[indexOfProduct])
-})    
+app.use("/products", productRoutes)
 
-// This is DELETE from CRUD
-app.delete("/products/:pid", (req, res) => {
-    const pid = req.params.pid
-    const indexOfProduct = products.findIndex(product => product.id == pid)
-    products.splice(indexOfProduct, 1)
-    res.json(products)
-})
+app.get("/dashboard", verifyToken, (req, res) => {
+   res.send("Protected content!");
+})   
 
 app.listen(3000, () => console.log("Server is running on http://localhost:3000"))
 
