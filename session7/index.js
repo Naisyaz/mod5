@@ -38,7 +38,7 @@ app.get("/test", (req, res) => {
 
 app.post("/message", (req, res) => {
     const message = req.body.text;
-    res.send('You said: ${message}')
+    res.send('You said: ${message}');
 })
 
 app.use("/products", productRoutes)
